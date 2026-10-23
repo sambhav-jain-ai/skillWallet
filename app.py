@@ -91,7 +91,7 @@ with st.sidebar:
     st.session_state["api_key"] = st.text_input("Google Gemini API Key", type="password",
                                                 help="Leave empty for demonstration mode.")
     st.session_state["model"] = st.selectbox("Model", ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"])
-    st.success("Live AI mode") if st.session_state["api_key"] else st.info("Demonstration mode (no key)")
+    if st.session_state["api_key"]:         st.success("Live AI mode")     else:         st.info("Demonstration mode (no key)")
     st.divider()
     st.subheader("Architecture")
     st.markdown("""
