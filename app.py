@@ -91,7 +91,10 @@ with st.sidebar:
     st.session_state["api_key"] = st.text_input("Google Gemini API Key", type="password",
                                                 help="Leave empty for demonstration mode.")
     st.session_state["model"] = st.selectbox("Model", ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"])
-    if st.session_state["api_key"]:         st.success("Live AI mode")     else:         st.info("Demonstration mode (no key)")
+    if st.session_state["api_key"]:
+        st.success("Live AI mode")
+    else:
+        st.info("Demonstration mode (no key)")
     st.divider()
     st.subheader("Architecture")
     st.markdown("""
@@ -118,15 +121,17 @@ with t1:
         c1.image(img, use_container_width=True)
         if c2.button("Run safety audit", type="primary"):
             with st.spinner("Analysing PPE compliance..."):
-                st.session_state["ppe"], demo = analyze_image(PPE_PROMPT, img, DEMO_PPE)
+                st.session_state["ppe"], _ = analyze_image(PPE_PROMPT, img, DEMO_PPE)
         r = st.session_state.get("ppe")
         if r:
             with c2:
                 m1, m2, m3 = st.columns(3)
-                with m1: card("Safety score", f"{r.get('safety_score', 0)}/100")
-                with m2: card("Workers", r.get("workers_detected", "–"))
-                with m3: card("Status", "")
-                st.markdown(pill(r.get("overall_status", "–")), unsafe_allow_html=True)
+                with m1:
+                    card("Safety score", f"{r.get('safety_score', 0)}/100")
+                with m2:
+                    card("Workers", r.get("workers_detected", "–"))
+                with m3:
+                    card("Status", pill(r.get("overall_status", "–")))
                 st.progress(min(max(int(r.get("safety_score", 0)), 0), 100) / 100)
                 st.write(r.get("summary", ""))
                 st.markdown("**PPE checklist**")
@@ -155,14 +160,19 @@ with t2:
         if r:
             with c2:
                 a, b, c = st.columns(3)
-                with a: card("Defect", r.get("defect_type", "–"))
-                with b: card("Width", f"{r.get('estimated_width_mm', 0)} mm")
-                with c: card("Severity", f"{r.get('severity_score', 0)}/100")
+                with a:
+                    card("Defect", r.get("defect_type", "–"))
+                with b:
+                    card("Width", f"{r.get('estimated_width_mm', 0)} mm")
+                with c:
+                    card("Severity", f"{r.get('severity_score', 0)}/100")
                 st.markdown("Urgency: " + pill(r.get("urgency", "Low")), unsafe_allow_html=True)
                 st.markdown("**Root causes**")
-                for x in r.get("root_causes", []): st.write("• " + x)
+                for x in r.get("root_causes", []):
+                    st.write("• " + x)
                 st.markdown("**Recommended repairs**")
-                for x in r.get("recommended_repairs", []): st.write("🔧 " + x)
+                for x in r.get("recommended_repairs", []):
+                    st.write("🔧 " + x)
                 st.info(r.get("monitoring_advice", ""))
             st.download_button("⬇️ Download JSON report", json.dumps(r, indent=2), "crack_report.json",
                                "application/json")
@@ -190,14 +200,19 @@ with t3:
     asset_value = full_value * (0.25 + 0.75 * pct / 100)  # land/approvals floor + progress
     steel_t, cement_bags = sqft * 4 / 1000, sqft * 0.4  # rule-of-thumb: 4 kg steel, 0.4 bag cement per sq ft
 
-    m = st.columns(4)
-    for col, (l, v) in zip(m, [("Total budget", inr(budget)), ("CapEx incurred", inr(capex)),
-                               ("Current asset value", inr(asset_value)), ("Value on completion", inr(full_value))]):
-        with col: card(l, v)
-    m = st.columns(3)
-    with m[0]: card("Steel required", f"{steel_t:.1f} tonnes")
-    with m[1]: card("Cement required", f"{cement_bags:,.0f} bags")
-    with m[2]: card("Value uplift at completion", inr(full_value - asset_value))
+    cols = st.columns(4)
+    items = [("Total budget", inr(budget)), ("CapEx incurred", inr(capex)),
+             ("Current asset value", inr(asset_value)), ("Value on completion", inr(full_value))]
+    for col, (lbl, val) in zip(cols, items):
+        with col:
+            card(lbl, val)
+    cols = st.columns(3)
+    with cols[0]:
+        card("Steel required", f"{steel_t:.1f} tonnes")
+    with cols[1]:
+        card("Cement required", f"{cement_bags:,.0f} bags")
+    with cols[2]:
+        card("Value uplift at completion", inr(full_value - asset_value))
     st.markdown("#### Milestone progress")
     st.progress(pct / 100)
     done = [n for p, n in MILESTONES if pct >= p]
@@ -234,7 +249,10 @@ with t4:
     icon, lvl, alerts = WEATHER[w]
     st.markdown(f"### {icon} {w} — risk {pill(lvl)}", unsafe_allow_html=True)
     for a in alerts:
-        (st.success if w == "Normal" else st.warning)(a)
+        if w == "Normal":
+            st.success(a)
+        else:
+            st.warning(a)
 
     st.markdown("---\n#### Engineering assistant")
     if "chat" not in st.session_state:
@@ -242,7 +260,8 @@ with t4:
     for msg in st.session_state["chat"]:
         with st.chat_message(msg["role"]):
             st.write(msg["content"])
-    if q := st.chat_input("Ask about site safety, materials, curing, codes..."):
+    q = st.chat_input("Ask about site safety, materials, curing, codes...")
+    if q:
         st.session_state["chat"].append({"role": "user", "content": q})
         with st.chat_message("user"):
             st.write(q)
@@ -261,6 +280,7 @@ with t4:
         st.session_state["chat"].append({"role": "assistant", "content": reply})
         with st.chat_message("assistant"):
             st.write(reply)
-    if st.session_state["chat"] and st.button("Clear chat"):
-        st.session_state["chat"] = []
-        st.rerun()
+    if st.session_state["chat"]:
+        if st.button("Clear chat"):
+            st.session_state["chat"] = []
+            st.rerun()
