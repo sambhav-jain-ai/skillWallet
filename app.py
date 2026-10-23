@@ -121,8 +121,8 @@ with t1:
         c1.image(img, use_container_width=True)
         if c2.button("Run safety audit", type="primary"):
             with st.spinner("Analysing PPE compliance..."):
-                st.session_state["ppe"], _ = analyze_image(PPE_PROMPT, img, DEMO_PPE)
-        r = st.session_state.get("ppe")
+                st.session_state["ppe_result"], _ = analyze_image(PPE_PROMPT, img, DEMO_PPE)
+        r = st.session_state.get("ppe_result")
         if r:
             with c2:
                 m1, m2, m3 = st.columns(3)
@@ -155,8 +155,8 @@ with t2:
         c1.image(img, use_container_width=True)
         if c2.button("Diagnose defect", type="primary"):
             with st.spinner("Classifying defect..."):
-                st.session_state["crack"], _ = analyze_image(CRACK_PROMPT, img, DEMO_CRACK)
-        r = st.session_state.get("crack")
+                st.session_state["crack_result"], _ = analyze_image(CRACK_PROMPT, img, DEMO_CRACK)
+        r = st.session_state.get("crack_result")
         if r:
             with c2:
                 a, b, c = st.columns(3)
